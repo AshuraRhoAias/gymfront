@@ -1,24 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Login from './Components/Login';
+import Dashboard from './Components/Dashboard';
+import Inscripciones from './Components/Header/Inscripciones';
+import Renovaciones from './Components/Header/Renovaciones';
+import InscripcionesBacho from './Components/Header/InscripcionesBacho';
+import RenovacionesBacho from './Components/Header/RenovacionesBacho';
+import DashboardHome from './Components/DashboardHome';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<DashboardHome  />} />
+          <Route path="inscripciones" element={<Inscripciones />} />
+          <Route path="renovaciones" element={<Renovaciones />} />
+          <Route path="inscripciones-bacho" element={<InscripcionesBacho />} />
+          <Route path="renovaciones-bacho" element={<RenovacionesBacho />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

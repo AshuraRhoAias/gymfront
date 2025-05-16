@@ -1,0 +1,136 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #0a0a0a;
+    color: white;
+    height: 100vh;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    border-bottom: 1px solid #222;
+    background-color: #0a0a0a;
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #21e6c1;
+}
+
+.header-buttons button {
+    margin-left: 10px;
+    background-color: #111;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.header-buttons .login-btn {
+    background-color: #21e6c1;
+    color: #000;
+    font-weight: bold;
+}
+
+.login-box {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-form {
+    background-color: #111;
+    padding: 40px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid #333;
+}
+
+.login-form .icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #21e6c1;
+}
+
+.login-form h2 {
+    margin-bottom: 5px;
+}
+
+.login-form p {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.login-form label {
+    display: block;
+    text-align: left;
+    margin: 10px 0 5px;
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    background-color: #222;
+    border: 1px solid #333;
+    color: white;
+    border-radius: 6px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background-color: #21e6c1;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #222;
+    background-color: #0a0a0a;
+    font-size: 0.85rem;
+    position: relative;
+}
+
+.footer-circle {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: #111;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #333;
+}

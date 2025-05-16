@@ -1,0 +1,275 @@
+/* Dashboard.css */
+
+/* Base styles */
+*,
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    line-height: 1.5;
+}
+
+.dashboard-container-DASH {
+    margin-top: 40px;
+}
+
+.DASH {
+    margin-top: 70px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #333;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.welcome-text {
+    font-size: 14px;
+    color: #999;
+}
+
+.month-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+.calendar-icon {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.month-selector select {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    outline: none;
+    cursor: pointer;
+}
+
+.month-selector select option {
+    background-color: #222;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 24px 16px;
+}
+
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Stats Card */
+.stat-card {
+    background-color: #000;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.stat-card:hover {
+    background-color: #111;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-header h3 {
+    color: #999;
+    font-weight: normal;
+    font-size: 14px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+}
+
+.stat-content {
+    margin-top: 8px;
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.stat-subtitle {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Navigation Tabs */
+.navigation-tabs {
+    display: flex;
+    padding: 0 16px;
+    border-bottom: 1px solid #333;
+}
+
+.tab {
+    padding: 12px 16px;
+    color: #999;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.tab:hover,
+.tab.active {
+    border-bottom: 2px solid #fff;
+    color: #fff;
+}
+
+.search-container {
+    margin-left: auto;
+    padding: 8px 0;
+}
+
+.search-input {
+    background-color: #111;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    padding: 8px 12px;
+    width: 240px;
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #666;
+}
+
+/* Registration Section */
+.registration-section {
+    padding: 24px 16px;
+}
+
+.section-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.section-subtitle {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 16px;
+}
+
+/* Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: normal;
+    color: #999;
+    border-bottom: 1px solid #333;
+}
+
+.data-table td {
+    padding: 16px;
+}
+
+.status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status.completed {
+    background-color: rgba(0, 128, 0, 0.2);
+    color: #00e676;
+}
+
+.status.pending {
+    background-color: rgba(128, 128, 0, 0.2);
+    color: #fff176;
+}
+
+.document-badge {
+    display: flex;
+    align-items: center;
+    color: #f57c00;
+    font-size: 14px;
+}
+
+.document-badge svg {
+    margin-right: 4px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-button {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    color: #fff;
+}
+
+/* Outlet container */
+.content-outlet {
+    padding: 20px;
+    /* The Outlet's styling should allow the content to be visible */
+}
