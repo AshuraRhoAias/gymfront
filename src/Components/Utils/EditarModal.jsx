@@ -5,15 +5,16 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
     // Estado local para los datos editables
     const [formData, setFormData] = useState({
         nombre: '',
-        inscripcion: '',
         folio: '',
         mes: '',
+        año: new Date().getFullYear(),
         estatus: '',
         forma_pago: '',
+        monto: '',
         horario: '',
         fecha_ingreso: '',
-        hora: '',
         numero_telefonico: '',
+        es_bacho: false,
         documentos: {
             cedula: false,
             curp: false,
@@ -29,7 +30,7 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
     useEffect(() => {
         if (inscripcion) {
             // Convertir documentos_faltantes a la estructura que necesitamos
-            // (negando los valores porque true=entregado, false=faltante)
+            // (negando los valores porque true=faltante, false=entregado en documentos_faltantes)
             const documentos = {};
             if (inscripcion.documentos_faltantes) {
                 Object.entries(inscripcion.documentos_faltantes).forEach(([key, value]) => {
@@ -41,17 +42,26 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                 });
             }
 
+            // Formatear la fecha para el input date
+            let fechaFormateada = '';
+            if (inscripcion.fecha_ingreso) {
+                const fecha = new Date(inscripcion.fecha_ingreso);
+                fechaFormateada = fecha.toISOString().split('T')[0];
+            }
+
             setFormData({
                 nombre: inscripcion.nombre || '',
                 inscripcion: inscripcion.inscripcion || '',
                 folio: inscripcion.folio || '',
                 mes: inscripcion.mes || '',
+                año: inscripcion.año || new Date().getFullYear(),
                 estatus: inscripcion.estatus || '',
                 forma_pago: inscripcion.forma_pago || '',
+                monto: inscripcion.monto || '',
                 horario: inscripcion.horario || '',
-                fecha_ingreso: inscripcion.fecha_ingreso ? new Date(inscripcion.fecha_ingreso).toISOString().split('T')[0] : '',
-                hora: inscripcion.hora || '',
+                fecha_ingreso: fechaFormateada,
                 numero_telefonico: inscripcion.numero_telefonico || '',
+                es_bacho: inscripcion.es_bacho || false,
                 documentos: documentos
             });
         }
@@ -80,6 +90,26 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
         }));
     };
 
+    // Manejar cambios en el campo de monto (validar que sea un número)
+    const handleMontoChange = (e) => {
+        const value = e.target.value;
+        // Permitir solo números con hasta 2 decimales
+        if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+            setFormData(prev => ({
+                ...prev,
+                monto: value
+            }));
+        }
+    };
+
+    // Manejar cambios en checkbox de es_bacho
+    const handleBachoChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            es_bacho: e.target.checked
+        }));
+    };
+
     // Manejar cambios en los comentarios de documentos
     const handleComentariosChange = (e) => {
         setFormData(prev => ({
@@ -101,13 +131,17 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
             if (key === 'comentarios') {
                 documentosFaltantes.comentarios = value;
             } else {
-                documentosFaltantes[key] = !value; // Negamos nuevamente
+                documentosFaltantes[key] = !value; // Negamos nuevamente para volver al formato original
             }
         });
 
+        // Obtener el usuario actual del localStorage
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+
         const dataToSave = {
             ...formData,
-            documentos_faltantes: documentosFaltantes
+            documentos_faltantes: documentosFaltantes,
+            editor_id: currentUser?.id || null // Enviar el ID del usuario que está haciendo la edición
         };
 
         onSave(inscripcion.id, dataToSave);
@@ -137,21 +171,8 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.nombre}
                                 onChange={handleChange}
                                 className="form-input"
+                                required
                             />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="inscripcion">Inscripción</label>
-                            <select
-                                id="inscripcion"
-                                name="inscripcion"
-                                value={formData.inscripcion}
-                                onChange={handleChange}
-                                className="form-select"
-                            >
-                                <option value="Regular">Regular</option>
-                                <option value="Especial">Especial</option>
-                            </select>
                         </div>
 
                         <div className="form-group">
@@ -163,6 +184,7 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.folio}
                                 onChange={handleChange}
                                 className="form-input"
+                                required
                             />
                         </div>
 
@@ -174,11 +196,37 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.mes}
                                 onChange={handleChange}
                                 className="form-select"
+                                required
                             >
+                                <option value="">Seleccione</option>
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
                                 <option value="Mayo">Mayo</option>
                                 <option value="Junio">Junio</option>
                                 <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
                             </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="año">Año</label>
+                            <input
+                                type="number"
+                                id="año"
+                                name="año"
+                                value={formData.año}
+                                onChange={handleChange}
+                                className="form-input"
+                                min="2020"
+                                max="2030"
+                                required
+                            />
                         </div>
 
                         <div className="form-group">
@@ -189,11 +237,27 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.forma_pago}
                                 onChange={handleChange}
                                 className="form-select"
+                                required
                             >
+                                <option value="">Seleccione</option>
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Tarjeta">Tarjeta</option>
                                 <option value="Transferencia">Transferencia</option>
+                                <option value="Otro">Otro</option>
                             </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="monto">Monto</label>
+                            <input
+                                type="text"
+                                id="monto"
+                                name="monto"
+                                value={formData.monto}
+                                onChange={handleMontoChange}
+                                className="form-input"
+                                placeholder="0.00"
+                            />
                         </div>
 
                         <div className="form-group">
@@ -204,10 +268,15 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.estatus}
                                 onChange={handleChange}
                                 className="form-select"
+                                required
                             >
-                                <option value="Completado">Completado</option>
+                                <option value="">Seleccione</option>
                                 <option value="Pendiente">Pendiente</option>
+                                <option value="Completado">Completado</option>
                                 <option value="Cancelado">Cancelado</option>
+                                <option value="Entregado">Entregado</option>
+                                <option value="Tramitar hoja">Tramitar hoja</option>
+                                <option value="Faltan doc.">Faltan doc.</option>
                             </select>
                         </div>
 
@@ -220,6 +289,7 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.horario}
                                 onChange={handleChange}
                                 className="form-input"
+                                required
                             />
                         </div>
 
@@ -232,18 +302,7 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.fecha_ingreso}
                                 onChange={handleChange}
                                 className="form-input"
-                            />
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="hora">Hora</label>
-                            <input
-                                type="time"
-                                id="hora"
-                                name="hora"
-                                value={formData.hora}
-                                onChange={handleChange}
-                                className="form-input"
+                                required
                             />
                         </div>
 
@@ -256,7 +315,22 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.numero_telefonico}
                                 onChange={handleChange}
                                 className="form-input"
+                                required
                             />
+                        </div>
+
+                        <div className="form-group checkbox-group">
+                            <label htmlFor="es_bacho" className="checkbox-label">
+                                <input
+                                    type="checkbox"
+                                    id="es_bacho"
+                                    name="es_bacho"
+                                    checked={formData.es_bacho}
+                                    onChange={handleBachoChange}
+                                    className="form-checkbox"
+                                />
+                                Bachillerato
+                            </label>
                         </div>
                     </div>
 

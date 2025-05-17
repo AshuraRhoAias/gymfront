@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Dashboard.css';
 import DetallesModal from './Utils/DetallesModal';
+import EditarModal from './Utils/EditarModal';
 
 // Datos de ejemplo para documentos faltantes
 const missingDocsData = {
@@ -35,6 +36,8 @@ const DashboardHome = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [selectedInscripcion, setSelectedInscripcion] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedInscripcionToEdit, setSelectedInscripcionToEdit] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -126,9 +129,10 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={inscripciones}
+                    inscripciones={displayData.filter(insc => !insc.es_bacho)}
                     userRole={userRole}
                     onShowDetails={handleShowDetails}
+                    onEditInscripcion={handleEditInscripcion}
                 />;
             case 'renovaciones':
                 return <RenovacionesTable
@@ -137,6 +141,7 @@ const DashboardHome = () => {
                     setHoveredDoc={setHoveredDoc}
                     inscripciones={displayData}
                     userRole={userRole}
+                    onEditInscripcion={handleEditInscripcion}
                 />;
             case 'inscripciones-bacho':
                 return <InscripcionesBachoTable
@@ -146,6 +151,7 @@ const DashboardHome = () => {
                     inscripciones={displayData.filter(insc => insc.es_bacho)}
                     userRole={userRole}
                     onShowDetails={handleShowDetails}
+                    onEditInscripcion={handleEditInscripcion}
                 />;
             case 'renovaciones-bacho':
                 return <RenovacionesBachoTable
@@ -154,6 +160,7 @@ const DashboardHome = () => {
                     setHoveredDoc={setHoveredDoc}
                     inscripciones={displayData}
                     userRole={userRole}
+                    onEditInscripcion={handleEditInscripcion}
                 />;
             default:
                 return <InscripcionesTable
@@ -162,6 +169,8 @@ const DashboardHome = () => {
                     setHoveredDoc={setHoveredDoc}
                     inscripciones={displayData.filter(insc => !insc.es_bacho)}
                     userRole={userRole}
+                    onShowDetails={handleShowDetails}
+                    onEditInscripcion={handleEditInscripcion}
                 />;
         }
     };
@@ -207,6 +216,81 @@ const DashboardHome = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedInscripcion(null);
+    };
+
+    // Función para cerrar el modal de edición
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedInscripcionToEdit(null);
+    };
+
+    // Función para abrir el modal de edición
+    const handleEditInscripcion = (inscripcion) => {
+        setSelectedInscripcionToEdit(inscripcion);
+        setIsEditModalOpen(true);
+    };
+
+    // Función para guardar los cambios realizados en el modal de edición
+    // Función para guardar los cambios realizados en el modal de edición
+    const handleSaveChanges = async (id, updatedData) => {
+        try {
+            // Agregar el editor_id a los datos a enviar
+            const dataToSend = {
+                ...updatedData,
+                editor_id: user ? user.id : null // Usar el ID del usuario actual
+            };
+
+            console.log('Datos a enviar:', dataToSend);
+
+            // Realizar la petición para actualizar los datos
+            const response = await fetch(`http://localhost:5000/api/inscripciones/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Respuesta de actualización:', result);
+
+                // Actualizar el estado local con los datos modificados
+                const updatedInscripciones = inscripciones.map(insc =>
+                    insc.id === id ? { ...insc, ...result.inscripcion } : insc
+                );
+                setInscripciones(updatedInscripciones);
+
+                // Actualizar también los resultados de búsqueda si es necesario
+                if (searchResults.length > 0) {
+                    const updatedSearchResults = searchResults.map(insc =>
+                        insc.id === id ? { ...insc, ...result.inscripcion } : insc
+                    );
+                    setSearchResults(updatedSearchResults);
+                }
+
+                // Cerrar el modal
+                handleCloseEditModal();
+
+                // Mostrar mensaje de éxito
+                alert("Registro actualizado correctamente");
+            } else {
+                let errorMessage = "Error al actualizar el registro";
+                try {
+                    const errorData = await response.json();
+                    errorMessage += ": " + (errorData.message || errorData.error || "");
+                } catch (e) {
+                    const errorText = await response.text();
+                    errorMessage += ": " + errorText;
+                }
+                console.error('Error al actualizar la inscripción:', errorMessage);
+                alert(errorMessage);
+            }
+        } catch (error) {
+            console.error('Error en la petición de actualización:', error);
+            alert("Error al actualizar el registro: " + error.message);
+        }
     };
 
     return (
@@ -351,25 +435,48 @@ const DashboardHome = () => {
                 onClose={handleCloseModal}
                 inscripcion={selectedInscripcion}
             />
+
+            {/* Modal de edición */}
+            <EditarModal
+                isOpen={isEditModalOpen}
+                onClose={handleCloseEditModal}
+                inscripcion={selectedInscripcionToEdit}
+                onSave={handleSaveChanges}
+            />
         </div>
     );
 };
 
 const DocumentsTooltip = ({ documentosFaltantes, recordId }) => {
+    // Si documentosFaltantes es null o undefined, mostramos un mensaje adecuado
+    if (!documentosFaltantes) {
+        return (
+            <div className="documents-tooltip">
+                <h4>Documentos faltantes:</h4>
+                <p>No hay información de documentos disponible</p>
+            </div>
+        );
+    }
+
     // Convertir objeto de documentos faltantes a array
-    const documentosArray = documentosFaltantes ?
-        Object.entries(documentosFaltantes)
-            .filter(([key, value]) => value === false && key !== 'comentarios')
-            .map(([key, _]) => {
-                // Convertir snake_case a texto legible
-                return key
-                    .split('_')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
-            }) : [];
+    // IMPORTANTE: En documentos_faltantes, los valores 'false' indican documentos faltantes
+    // y los valores 'true' indican documentos entregados
+    const documentosArray = Object.entries(documentosFaltantes)
+        .filter(([key, value]) => {
+            // Solo incluir propiedades que son booleanas y son 'false' (documento faltante)
+            // Y excluir la propiedad 'comentarios'
+            return typeof value === 'boolean' && value === false && key !== 'comentarios';
+        })
+        .map(([key, _]) => {
+            // Convertir snake_case a texto legible
+            return key
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        });
 
     // Extraer comentarios si existen
-    const comentarios = documentosFaltantes && documentosFaltantes.comentarios;
+    const comentarios = documentosFaltantes.comentarios;
 
     return (
         <div className="documents-tooltip">
@@ -395,7 +502,7 @@ const DocumentsTooltip = ({ documentosFaltantes, recordId }) => {
 };
 
 // 4. Modificar InscripcionesTable para usar datos dinámicos
-const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripciones, userRole, onShowDetails }) => {
+const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripciones, userRole, onShowDetails, onEditInscripcion }) => {
     // Filtrar inscripciones que no son de bachillerato
     const inscripcionesNormales = inscripciones.filter(insc => !insc.es_bacho);
 
@@ -422,10 +529,14 @@ const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripci
                 <tbody>
                     {inscripcionesNormales.length > 0 ? (
                         inscripcionesNormales.map(insc => {
-                            // Contar documentos faltantes
+                            // Contar documentos faltantes correctamente
                             const docsFaltantes = insc.documentos_faltantes ?
-                                Object.values(insc.documentos_faltantes)
-                                    .filter((val, key) => typeof val === 'boolean' && val === false).length : 0;
+                                Object.entries(insc.documentos_faltantes)
+                                    .filter(([key, value]) =>
+                                        typeof value === 'boolean' &&
+                                        value === false &&
+                                        key !== 'comentarios'
+                                    ).length : 0;
 
                             // Formatear fecha
                             const fecha = new Date(insc.fecha_ingreso);
@@ -468,7 +579,7 @@ const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripci
                                         </button>
                                         {/* Botón de edición - solo visible para admin o editor */}
                                         {(userRole === 'admin' || userRole === 'editor') && (
-                                            <button className="action-button">
+                                            <button className="action-button" onClick={() => onEditInscripcion(insc)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
@@ -659,7 +770,7 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => {
 };
 
 // 5. Modificar InscripcionesBachoTable para usar datos dinámicos
-const InscripcionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripciones, userRole, onShowDetails }) => {
+const InscripcionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripciones, userRole, onShowDetails, onEditInscripcion }) => {
     // Filtrar inscripciones de bachillerato
     const inscripcionesBacho = inscripciones.filter(insc => insc.es_bacho);
 
@@ -732,7 +843,7 @@ const InscripcionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, insc
                                         </button>
                                         {/* Botón de edición - solo visible para admin o editor */}
                                         {(userRole === 'admin' || userRole === 'editor') && (
-                                            <button className="action-button">
+                                            <button className="action-button" onClick={() => onEditInscripcion(insc)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                 </svg>
