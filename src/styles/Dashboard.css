@@ -164,6 +164,25 @@ a {
     cursor: pointer;
 }
 
+/* Estilos para Navigation Tabs */
+
+/* Navigation Tabs */
+.navigation-tabs {
+    display: flex;
+    padding: 0 16px;
+    border-bottom: 1px solid #333;
+}
+
+.tab {
+    padding: 12px 16px;
+    color: #999;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: Arial, sans-serif;
+}
+
 .tab:hover,
 .tab.active {
     border-bottom: 2px solid #fff;
@@ -183,6 +202,7 @@ a {
     padding: 8px 12px;
     width: 240px;
     outline: none;
+    font-family: Arial, sans-serif;
 }
 
 .search-input::placeholder {
@@ -221,7 +241,7 @@ a {
 }
 
 .data-table td {
-    padding: 16px;
+    padding: 16px 10px;
 }
 
 .status {
@@ -255,6 +275,7 @@ a {
 .actions {
     display: flex;
     gap: 8px;
+    margin-top: 15px;
 }
 
 .action-button {
@@ -272,4 +293,20 @@ a {
 .content-outlet {
     padding: 20px;
     /* The Outlet's styling should allow the content to be visible */
+}
+
+
+
+
+.documents-tooltip{
+    width: 300px;
+    position: fixed;
+    margin-top: -300px;
+    margin-left: -150px;
+    background-color: #454545;
+    padding: 10px 20px;
+
+    ul{
+        padding-left: 15px;
+    }
 }
