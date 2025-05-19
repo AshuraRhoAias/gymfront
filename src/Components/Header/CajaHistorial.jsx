@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const CajaHistorial = () => {
+const CajaHistorial = ({ url }) => {
     // Estados para almacenar los datos
     const [movimientos, setMovimientos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [token, setToken] = useState('');
-    const [user, setUser] = useState(null);
+    const [, setUser] = useState(null);
 
     // Estado para las estadísticas
     const [stats, setStats] = useState({
@@ -47,7 +47,8 @@ const CajaHistorial = () => {
                 ordenar_por: 'created_at'
             };
 
-            const response = await fetch('http://localhost:5000/api/caja/consultar', {
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+            const response = await fetch(`http://${url}/api/caja/consultar`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

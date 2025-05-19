@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 
-const Renovaciones = () => {
+const Renovaciones = ({ url }) => {
     const [, setUser] = useState(null); // <- Estado para usuario inicializado como null
     const [selectedMes, setSelectedMes] = useState('Mayo');
     const [prevMonth, setPrevMonth] = useState('Abril');
@@ -80,7 +80,8 @@ const Renovaciones = () => {
                 throw new Error('No hay token de autenticación disponible');
             }
 
-            const response = await fetch('http://localhost:5000/api/buscar-ultimo-registro', {
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+            const response = await fetch(`http://${url}/api/buscar-ultimo-registro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -236,7 +237,8 @@ const Renovaciones = () => {
             console.log(apiData);
 
             // Enviar datos a la API
-            const response = await fetch('http://localhost:5000/api/renovaciones', {
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+            const response = await fetch(`http://${url}/api/renovaciones`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

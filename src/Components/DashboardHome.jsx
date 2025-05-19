@@ -4,7 +4,7 @@ import DetallesModal from './Utils/DetallesModal';
 import EditarModal from './Utils/EditarModal';
 
 
-const DashboardHome = () => {
+const DashboardHome = ({ url }) => {
     const [currentMonth, setCurrentMonth] = useState('Mayo');
     const [currentYear, setCurrentYear] = useState(2025);
     const [activeTab, setActiveTab] = useState('inscripciones');
@@ -55,7 +55,8 @@ const DashboardHome = () => {
         const fetchData = async () => {
             try {
                 // Petición para obtener contadores
-                const contadoresResponse = await fetch('http://localhost:5000/api/inscripciones/contador', {
+                // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+                const contadoresResponse = await fetch(`http://${url}/api/inscripciones/contador`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -68,7 +69,8 @@ const DashboardHome = () => {
                 });
 
                 // Petición para obtener documentos faltantes
-                const inscripcionesResponse = await fetch('http://localhost:5000/api/inscripciones/documentos-faltantes', {
+                // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+                const inscripcionesResponse = await fetch(`http://${url}/api/inscripciones/documentos-faltantes`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -80,7 +82,8 @@ const DashboardHome = () => {
                     })
                 });
 
-                const contadoresRenovacionesResponse = await fetch('http://localhost:5000/api/renovaciones/contador', {
+                // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+                const contadoresRenovacionesResponse = await fetch(`http://${url}/api/renovaciones/contador`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -93,7 +96,8 @@ const DashboardHome = () => {
                 });
 
                 // Petición para obtener datos de renovaciones
-                const renovacionesResponse = await fetch('http://localhost:5000/api/renovaciones/obtener', {
+                // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+                const renovacionesResponse = await fetch(`http://${url}/api/renovaciones/obtener`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -304,9 +308,10 @@ const DashboardHome = () => {
                 updatedData._source.includes('renovaciones');
 
             // Construir el endpoint basado en el tipo
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
             const endpoint = esRenovacion
-                ? `http://localhost:5000/api/renovaciones/${id}`
-                : `http://localhost:5000/api/inscripciones/${id}`;
+                ? `http://${url}/api/renovaciones/${id}`
+                : `http://${url}/api/inscripciones/${id}`;
 
             // Preparar los datos a enviar según el tipo
             let dataToSend;
@@ -450,6 +455,7 @@ const DashboardHome = () => {
                             <option value={2026}>2026</option>
                         </select>
                         <select value={currentMonth} onChange={(e) => setCurrentMonth(e.target.value)}>
+                            <option>Abril</option>
                             <option>Mayo</option>
                             <option>Junio</option>
                             <option>Julio</option>

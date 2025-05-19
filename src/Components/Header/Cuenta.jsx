@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../styles/Cuenta.css'; // Importamos los estilos CSS
 
-const Cuenta = () => {
+const Cuenta = ({ url }) => {
     // Estados para el formulario
     const [user, setUser] = useState(null);
     const [montoTotal, setMontoTotal] = useState('');
@@ -54,7 +54,8 @@ const Cuenta = () => {
         setMessage({ text: '', type: '' });
 
         try {
-            const response = await fetch('http://localhost:5000/api/caja', {
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+            const response = await fetch(`http://${url}/api/caja`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

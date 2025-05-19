@@ -8,16 +8,18 @@ import Cuenta from './Components/Header/Cuenta';
 import CajaHistorial from './Components/Header/CajaHistorial';
 
 function App() {
+  const Url = "192.168.100.55:5000";
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />}>
-          <Route index element={<DashboardHome  />} />
-          <Route path="inscripciones" element={<Inscripciones />} />
-          <Route path="renovaciones" element={<Renovaciones />} />
-          <Route path="cuenta" element={<Cuenta />} />
-          <Route path="caja" element={<CajaHistorial />} />
+        <Route path="/" element={<Login url={Url} />} />
+        <Route path="/dashboard" element={<Dashboard  url={Url}/>}>
+          <Route index element={<DashboardHome url={Url} />} />
+          <Route path="inscripciones" element={<Inscripciones url={Url} />} />
+          <Route path="renovaciones" element={<Renovaciones url={Url} />} />
+          <Route path="cuenta" element={<Cuenta url={Url} />} />
+          <Route path="caja" element={<CajaHistorial url={Url} />} />
         </Route>
       </Routes>
     </BrowserRouter>

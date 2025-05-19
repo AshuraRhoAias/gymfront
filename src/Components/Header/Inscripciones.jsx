@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
-export default function Inscripciones() {
-    const [user, setUser] = useState(null);
+export default function Inscripciones({ url }) {
+    const [, setUser] = useState(null);
 
     const [formData, setFormData] = useState({
         nombre: '',
@@ -90,7 +90,8 @@ export default function Inscripciones() {
             }
 
 
-            const response = await fetch('http://localhost:5000/api/inscripciones', {
+            // Assuming you have access to the url object {url: '192.168.100.55:5000'}
+            const response = await fetch(`http://${url}/api/inscripciones`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
