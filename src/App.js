@@ -3,9 +3,9 @@ import Login from './Components/Login';
 import Dashboard from './Components/Dashboard';
 import Inscripciones from './Components/Header/Inscripciones';
 import Renovaciones from './Components/Header/Renovaciones';
-import InscripcionesBacho from './Components/Header/InscripcionesBacho';
-import RenovacionesBacho from './Components/Header/RenovacionesBacho';
 import DashboardHome from './Components/DashboardHome';
+import Cuenta from './Components/Header/Cuenta';
+import CajaHistorial from './Components/Header/CajaHistorial';
 
 function App() {
   return (
@@ -16,8 +16,8 @@ function App() {
           <Route index element={<DashboardHome  />} />
           <Route path="inscripciones" element={<Inscripciones />} />
           <Route path="renovaciones" element={<Renovaciones />} />
-          <Route path="inscripciones-bacho" element={<InscripcionesBacho />} />
-          <Route path="renovaciones-bacho" element={<RenovacionesBacho />} />
+          <Route path="cuenta" element={<Cuenta />} />
+          <Route path="caja" element={<CajaHistorial />} />
         </Route>
       </Routes>
     </BrowserRouter>

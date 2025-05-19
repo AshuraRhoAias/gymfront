@@ -3,41 +3,34 @@ import '../styles/Dashboard.css';
 import DetallesModal from './Utils/DetallesModal';
 import EditarModal from './Utils/EditarModal';
 
-// Datos de ejemplo para documentos faltantes
-const missingDocsData = {
-    'INS-001': ['Acta de nacimiento', 'Comprobante de domicilio'],
-    'INS-002': ['Acta de nacimiento', 'CURP', 'Certificado médico', 'Fotografías'],
-    'INS-003': ['CURP', 'Certificado médico', 'Comprobante de pago', 'Fotografías'],
-    'REN-001': ['Certificado médico', 'Comprobante de pago'],
-    'REN-002': ['Comprobante de pago', 'Fotografías'],
-    'REN-003': ['CURP', 'Certificado médico', 'Fotografías'],
-    'INS-B-001': ['Acta de nacimiento', 'Certificado de secundaria'],
-    'INS-B-002': ['CURP', 'Certificado de secundaria', 'Comprobante de domicilio'],
-    'REN-B-001': ['Comprobante de pago', 'Fotografías'],
-    'REN-B-002': ['Certificado médico', 'Comprobante de pago']
-};
-
-
 
 const DashboardHome = () => {
     const [currentMonth, setCurrentMonth] = useState('Mayo');
     const [currentYear, setCurrentYear] = useState(2025);
     const [activeTab, setActiveTab] = useState('inscripciones');
     const [hoveredDoc, setHoveredDoc] = useState(null);
-    const [contadores, setContadores] = useState({
-        inscripciones_normales: 0,
-        inscripciones_bacho: 0
-    });
     const [token, setToken] = useState('');
     // 1. Modificar el estado para almacenar los datos de inscripciones
     const [inscripciones, setInscripciones] = useState([]);
     const [user, setUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
+    const [searchResults, setSearchResults] = useState({
+        inscripciones: [],
+        renovaciones: []
+    });
     const [selectedInscripcion, setSelectedInscripcion] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedInscripcionToEdit, setSelectedInscripcionToEdit] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [renovaciones, setRenovaciones] = useState([]);
+
+    // Actualizar el estado de contadores para incluir renovaciones
+    const [contadores, setContadores] = useState({
+        inscripciones_normales: 0,
+        inscripciones_bacho: 0,
+        renovaciones_normales: 0,
+        renovaciones_bacho: 0
+    });
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -87,6 +80,31 @@ const DashboardHome = () => {
                     })
                 });
 
+                const contadoresRenovacionesResponse = await fetch('http://localhost:5000/api/renovaciones/contador', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        año: currentYear,
+                        mes: currentMonth
+                    })
+                });
+
+                // Petición para obtener datos de renovaciones
+                const renovacionesResponse = await fetch('http://localhost:5000/api/renovaciones/obtener', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        año: currentYear,
+                        mes: currentMonth
+                    })
+                });
+
                 if (contadoresResponse.ok) {
                     const contadoresData = await contadoresResponse.json();
                     console.log('Respuesta de la API de contadores:', contadoresData);
@@ -106,6 +124,26 @@ const DashboardHome = () => {
                     const errorText = await inscripcionesResponse.text();
                     console.error('Detalle del error:', errorText);
                 }
+
+                // Procesar respuestas de contadores de renovaciones
+                if (contadoresRenovacionesResponse.ok) {
+                    const contadoresRenData = await contadoresRenovacionesResponse.json();
+                    console.log('Respuesta de la API de contadores renovaciones:', contadoresRenData);
+
+                    // Actualizar estado con contadores de renovaciones
+                    setContadores(prev => ({
+                        ...prev,
+                        renovaciones_normales: contadoresRenData.renovaciones_normales || 0,
+                        renovaciones_bacho: contadoresRenData.renovaciones_bacho || 0
+                    }));
+                }
+
+                // Procesar respuestas de datos de renovaciones
+                if (renovacionesResponse.ok) {
+                    const renovacionesData = await renovacionesResponse.json();
+                    console.log('Respuesta de la API de renovaciones:', renovacionesData);
+                    setRenovaciones(renovacionesData.renovaciones || []);
+                }
             } catch (error) {
                 console.error('Error en la petición:', error);
             }
@@ -121,7 +159,11 @@ const DashboardHome = () => {
         const userRole = user?.role || 'viewer';
 
         // Determinar qué datos usar: resultados de búsqueda o todos los datos
-        const displayData = searchTerm.trim() !== '' ? searchResults : inscripciones;
+        const displayInscripciones = searchTerm.trim() !== '' ?
+            searchResults.inscripciones : inscripciones;
+
+        const displayRenovaciones = searchTerm.trim() !== '' ?
+            searchResults.renovaciones : renovaciones;
 
         switch (activeTab) {
             case 'inscripciones':
@@ -129,7 +171,7 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={displayData.filter(insc => !insc.es_bacho)}
+                    inscripciones={displayInscripciones.filter(insc => !insc.es_bacho)}
                     userRole={userRole}
                     onShowDetails={handleShowDetails}
                     onEditInscripcion={handleEditInscripcion}
@@ -139,8 +181,10 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={displayData}
+                    renovaciones={displayRenovaciones.filter(ren => !ren.es_bacho)}
                     userRole={userRole}
+                    token={token}
+                    onShowDetails={handleShowDetails}
                     onEditInscripcion={handleEditInscripcion}
                 />;
             case 'inscripciones-bacho':
@@ -148,7 +192,7 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={displayData.filter(insc => insc.es_bacho)}
+                    inscripciones={displayInscripciones.filter(insc => insc.es_bacho)}
                     userRole={userRole}
                     onShowDetails={handleShowDetails}
                     onEditInscripcion={handleEditInscripcion}
@@ -158,8 +202,9 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={displayData}
+                    renovaciones={displayRenovaciones.filter(ren => ren.es_bacho)}
                     userRole={userRole}
+                    onShowDetails={handleShowDetails}
                     onEditInscripcion={handleEditInscripcion}
                 />;
             default:
@@ -167,7 +212,7 @@ const DashboardHome = () => {
                     currentMonth={currentMonth}
                     hoveredDoc={hoveredDoc}
                     setHoveredDoc={setHoveredDoc}
-                    inscripciones={displayData.filter(insc => !insc.es_bacho)}
+                    inscripciones={displayInscripciones.filter(insc => !insc.es_bacho)}
                     userRole={userRole}
                     onShowDetails={handleShowDetails}
                     onEditInscripcion={handleEditInscripcion}
@@ -186,23 +231,39 @@ const DashboardHome = () => {
         setSearchTerm(term);
 
         if (term.trim() === '') {
-            setSearchResults([]);
+            setSearchResults({
+                inscripciones: [],
+                renovaciones: []
+            });
             return;
         }
 
         // Buscar en todas las inscripciones
-        const results = inscripciones.filter(insc =>
+        const inscripcionesResults = inscripciones.filter(insc =>
             insc.nombre.toLowerCase().includes(term.toLowerCase()) ||
             (insc.folio && insc.folio.toLowerCase().includes(term.toLowerCase()))
         );
 
-        setSearchResults(results);
+        // Buscar en todas las renovaciones
+        const renovacionesResults = renovaciones.filter(ren =>
+            ren.nombre.toLowerCase().includes(term.toLowerCase()) ||
+            (ren.folio && ren.folio.toLowerCase().includes(term.toLowerCase()))
+        );
 
-        // Si hay resultados, cambiar automáticamente a la sección correspondiente
-        if (results.length > 0) {
+        setSearchResults({
+            inscripciones: inscripcionesResults,
+            renovaciones: renovacionesResults
+        });
+
+        // Cambiar automáticamente a la sección correspondiente si hay resultados
+        if (inscripcionesResults.length > 0) {
             // Verificar si el primer resultado es de bachillerato o normal
-            const firstResult = results[0];
+            const firstResult = inscripcionesResults[0];
             setActiveTab(firstResult.es_bacho ? 'inscripciones-bacho' : 'inscripciones');
+        } else if (renovacionesResults.length > 0) {
+            // Si no hay resultados en inscripciones pero sí en renovaciones
+            const firstResult = renovacionesResults[0];
+            setActiveTab(firstResult.es_bacho ? 'renovaciones-bacho' : 'renovaciones');
         }
     };
 
@@ -219,31 +280,86 @@ const DashboardHome = () => {
     };
 
     // Función para cerrar el modal de edición
+    // 4. No olvides resetear el modalType cuando cierres el modal
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedInscripcionToEdit(null);
+
     };
 
     // Función para abrir el modal de edición
     const handleEditInscripcion = (inscripcion) => {
         setSelectedInscripcionToEdit(inscripcion);
+
+        // Determinar qué modal usar basado en _source
+
         setIsEditModalOpen(true);
     };
 
     // Función para guardar los cambios realizados en el modal de edición
-    // Función para guardar los cambios realizados en el modal de edición
     const handleSaveChanges = async (id, updatedData) => {
         try {
-            // Agregar el editor_id a los datos a enviar
-            const dataToSend = {
-                ...updatedData,
-                editor_id: user ? user.id : null // Usar el ID del usuario actual
-            };
+            // Determinar si es una renovación o inscripción
+            const esRenovacion = updatedData._source &&
+                updatedData._source.includes('renovaciones');
 
-            console.log('Datos a enviar:', dataToSend);
+            // Construir el endpoint basado en el tipo
+            const endpoint = esRenovacion
+                ? `http://localhost:5000/api/renovaciones/${id}`
+                : `http://localhost:5000/api/inscripciones/${id}`;
 
-            // Realizar la petición para actualizar los datos
-            const response = await fetch(`http://localhost:5000/api/inscripciones/${id}`, {
+            // Preparar los datos a enviar según el tipo
+            let dataToSend;
+
+            if (esRenovacion) {
+                // Para renovaciones, adaptar los nombres de campos según el backend
+                const { _source, numero_telefonico, documentos, documentos_faltantes, ...baseData } = updatedData;
+
+                dataToSend = {
+                    ...baseData,
+                    telefono: numero_telefonico, // Renombrar para coincidir con el backend
+                    editor_id: user ? user.id : null,
+                    atendido_por: updatedData.atendido_por || user?.username || null
+                };
+            } else {
+                // Para inscripciones (normales y bachillerato)
+                const { _source, documentos, ...baseData } = updatedData;
+
+                // Asegurar que el campo 'inscripcion' esté presente (requerido por la API)
+                const inscripcion = baseData.inscripcion || baseData.folio || `INS-${id}`;
+
+                dataToSend = {
+                    ...baseData,
+                    inscripcion,
+                    editor_id: user ? user.id : null,
+                    documentos_faltantes: baseData.documentos_faltantes || {}
+                };
+
+                if (!baseData.documentos_faltantes && documentos) {
+                    dataToSend.documentos_faltantes = {};
+                    Object.entries(documentos).forEach(([key, value]) => {
+                        if (key !== 'comentarios' && typeof value === 'boolean') {
+                            dataToSend.documentos_faltantes[key] = value;
+                        }
+                    });
+
+                    if (documentos.comentarios) {
+                        dataToSend.documentos_faltantes.comentarios = documentos.comentarios;
+                    }
+                }
+
+                if (documentos?.comentarios) {
+                    dataToSend.comentarios = documentos.comentarios;
+                }
+            }
+
+            // LOGS DE DEPURACIÓN
+            console.log('🔹 Datos a enviar:', dataToSend);
+            console.log('🔹 Endpoint usado:', endpoint);
+            console.log('🔹 Método: PUT');
+            console.log('🔹 Token:', token); // ⚠️ Solo mostrar en entorno de desarrollo
+
+            const response = await fetch(endpoint, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -254,44 +370,64 @@ const DashboardHome = () => {
 
             if (response.ok) {
                 const result = await response.json();
-                console.log('Respuesta de actualización:', result);
+                console.log('✅ Respuesta de actualización:', result);
 
-                // Actualizar el estado local con los datos modificados
-                const updatedInscripciones = inscripciones.map(insc =>
-                    insc.id === id ? { ...insc, ...result.inscripcion } : insc
-                );
-                setInscripciones(updatedInscripciones);
+                if (esRenovacion) {
+                    const updatedRenovaciones = renovaciones.map(ren =>
+                        ren.id === id ? { ...ren, ...result.renovacion || dataToSend } : ren
+                    );
+                    setRenovaciones(updatedRenovaciones);
 
-                // Actualizar también los resultados de búsqueda si es necesario
-                if (searchResults.length > 0) {
-                    const updatedSearchResults = searchResults.map(insc =>
+                    if (searchResults.renovaciones.length > 0) {
+                        const updatedSearchRenovaciones = searchResults.renovaciones.map(ren =>
+                            ren.id === id ? { ...ren, ...result.renovacion || dataToSend } : ren
+                        );
+                        setSearchResults({
+                            ...searchResults,
+                            renovaciones: updatedSearchRenovaciones
+                        });
+                    }
+                } else {
+                    const updatedInscripciones = inscripciones.map(insc =>
                         insc.id === id ? { ...insc, ...result.inscripcion } : insc
                     );
-                    setSearchResults(updatedSearchResults);
+                    setInscripciones(updatedInscripciones);
+
+                    if (searchResults.inscripciones.length > 0) {
+                        const updatedSearchInscripciones = searchResults.inscripciones.map(insc =>
+                            insc.id === id ? { ...insc, ...result.inscripcion } : insc
+                        );
+                        setSearchResults({
+                            ...searchResults,
+                            inscripciones: updatedSearchInscripciones
+                        });
+                    }
                 }
 
-                // Cerrar el modal
                 handleCloseEditModal();
-
-                // Mostrar mensaje de éxito
                 alert("Registro actualizado correctamente");
             } else {
-                let errorMessage = "Error al actualizar el registro";
+                const errorBody = await response.text();
+                let parsedError;
+
                 try {
-                    const errorData = await response.json();
-                    errorMessage += ": " + (errorData.message || errorData.error || "");
+                    parsedError = JSON.parse(errorBody);
                 } catch (e) {
-                    const errorText = await response.text();
-                    errorMessage += ": " + errorText;
+                    parsedError = { message: errorBody };
                 }
-                console.error('Error al actualizar la inscripción:', errorMessage);
+
+                const errorMessage = "Error al actualizar el registro: " +
+                    (parsedError.message || parsedError.error || errorBody);
+
+                console.error('❌ Error al actualizar:', errorMessage);
                 alert(errorMessage);
             }
         } catch (error) {
-            console.error('Error en la petición de actualización:', error);
+            console.error('❌ Error en la petición de actualización:', error);
             alert("Error al actualizar el registro: " + error.message);
         }
     };
+
 
     return (
         <div className="dashboard-container">
@@ -351,7 +487,7 @@ const DashboardHome = () => {
                         </button>
                     </div>
                     <div className="stat-content">
-                        <p className="stat-number">0</p>
+                        <p className="stat-number">{contadores.renovaciones_normales || 0}</p>
                         <p className="stat-subtitle">en {currentMonth}</p>
                     </div>
                 </div>
@@ -373,6 +509,7 @@ const DashboardHome = () => {
                 </div>
 
                 {/* Renovaciones Bacho */}
+                {/* Renovaciones Bacho */}
                 <div className={`stat-card ${activeTab === 'renovaciones-bacho' ? 'active-stat' : ''}`} onClick={() => handleTabClick('renovaciones-bacho')}>
                     <div className="stat-header">
                         <h3>Renovaciones Bacho</h3>
@@ -383,7 +520,7 @@ const DashboardHome = () => {
                         </button>
                     </div>
                     <div className="stat-content">
-                        <p className="stat-number">0</p>
+                        <p className="stat-number">{contadores.renovaciones_bacho || 0}</p>
                         <p className="stat-subtitle">en {currentMonth}</p>
                     </div>
                 </div>
@@ -436,7 +573,8 @@ const DashboardHome = () => {
                 inscripcion={selectedInscripcion}
             />
 
-            {/* Modal de edición */}
+            {/* Renderización condicional del modal de edición */}
+
             <EditarModal
                 isOpen={isEditModalOpen}
                 onClose={handleCloseEditModal}
@@ -534,7 +672,7 @@ const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripci
                                 Object.entries(insc.documentos_faltantes)
                                     .filter(([key, value]) =>
                                         typeof value === 'boolean' &&
-                                        value === false &&
+                                        value === false &&  // false = documento faltante
                                         key !== 'comentarios'
                                     ).length : 0;
 
@@ -600,7 +738,26 @@ const InscripcionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, inscripci
     );
 };
 
-const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => {
+const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovaciones, userRole, token, onShowDetails, onEditInscripcion }) => {
+    // Esta función se asegura de que al editar una renovación, 
+    // se incluya el número telefónico en el objeto que se pasa al modal
+    const handleEditRenovacion = (renovacion) => {
+        // Si el teléfono no está en el formato esperado por el modal (numero_telefonico),
+        // lo añadimos explícitamente para asegurar compatibilidad
+        const renovacionConTelefono = {
+            ...renovacion,
+            // Asegurar que numero_telefonico exista, tomando valor de cualquier campo de teléfono existente
+            numero_telefonico: renovacion.numero_telefonico ||
+                renovacion.telefono ||
+                renovacion.num_telefono ||
+                renovacion.numero_telefono ||
+                ''
+        };
+
+        // Ahora pasamos el objeto enriquecido al manejador de edición
+        onEditInscripcion(renovacionConTelefono);
+    };
+
     return (
         <div className="registration-section">
             <h2 className="section-title">Renovación</h2>
@@ -614,155 +771,56 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => {
                         <th>Folio</th>
                         <th>Estatus</th>
                         <th>Forma de Pago</th>
-                        <th>Documentos</th>
-                        <th>Hora</th>
+                        <th>Monto</th>
+                        <th>Horario</th>
                         <th>Atendido por</th>
                         <th>Fecha</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Roberto González</td>
-                        <td>REN-001</td>
-                        <td><span className="status completed">Completado</span></td>
-                        <td>Tarjeta</td>
-                        <td>
-                            <div className="document-container">
-                                <span
-                                    className="document-badge"
-                                    onMouseEnter={() => setHoveredDoc('REN-001')}
-                                    onMouseLeave={() => setHoveredDoc(null)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    2 faltantes
-                                </span>
-                                {hoveredDoc === 'REN-001' && (
-                                    <div className="documents-tooltip">
-                                        <h4>Documentos faltantes:</h4>
-                                        <ul>
-                                            {missingDocsData['REN-001'].map((doc, idx) => (
-                                                <li key={idx}>{doc}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </td>
-                        <td>12:45</td>
-                        <td>Admin</td>
-                        <td>15/05/2023</td>
-                        <td className="actions">
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Lucía Fernández</td>
-                        <td>REN-002</td>
-                        <td><span className="status pending">Pendiente</span></td>
-                        <td>Transferencia</td>
-                        <td>
-                            <div className="document-container">
-                                <span
-                                    className="document-badge"
-                                    onMouseEnter={() => setHoveredDoc('REN-002')}
-                                    onMouseLeave={() => setHoveredDoc(null)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    2 faltantes
-                                </span>
-                                {hoveredDoc === 'REN-002' && (
-                                    <div className="documents-tooltip">
-                                        <h4>Documentos faltantes:</h4>
-                                        <ul>
-                                            {missingDocsData['REN-002'].map((doc, idx) => (
-                                                <li key={idx}>{doc}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </td>
-                        <td>11:15</td>
-                        <td>Admin</td>
-                        <td>14/05/2023</td>
-                        <td className="actions">
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Javier Morales</td>
-                        <td>REN-003</td>
-                        <td><span className="status completed">Completado</span></td>
-                        <td>Efectivo</td>
-                        <td>
-                            <div className="document-container">
-                                <span
-                                    className="document-badge"
-                                    onMouseEnter={() => setHoveredDoc('REN-003')}
-                                    onMouseLeave={() => setHoveredDoc(null)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    3 faltantes
-                                </span>
-                                {hoveredDoc === 'REN-003' && (
-                                    <div className="documents-tooltip">
-                                        <h4>Documentos faltantes:</h4>
-                                        <ul>
-                                            {missingDocsData['REN-003'].map((doc, idx) => (
-                                                <li key={idx}>{doc}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </td>
-                        <td>09:30</td>
-                        <td>Admin</td>
-                        <td>16/05/2023</td>
-                        <td className="actions">
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
+                    {renovaciones && renovaciones.length > 0 ? (
+                        renovaciones.map(ren => {
+                            // Formatear fecha
+                            const fecha = new Date(ren.fecha_ingreso);
+                            const fechaFormateada = fecha.toLocaleDateString('es-MX');
+
+                            return (
+                                <tr key={ren.id}>
+                                    <td>{ren.id}</td>
+                                    <td>{ren.nombre}</td>
+                                    <td>{ren.folio || '-'}</td>
+                                    <td><span className={`status ${ren.estatus.toLowerCase()}`}>{ren.estatus}</span></td>
+                                    <td>{ren.forma_pago}{ren.especificar ? ` (${ren.especificar})` : ''}</td>
+                                    <td>${ren.monto}</td>
+                                    <td>{ren.horario}</td>
+                                    <td>{ren.atendido_por}</td>
+                                    <td>{fechaFormateada}</td>
+                                    <td className="actions">
+                                        {/* Botón de visualización - visible para todos los roles */}
+                                        <button className="action-button" onClick={() => onShowDetails(ren)}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
+                                        {/* Botón de edición - solo visible para admin o editor */}
+                                        {(userRole === 'admin' || userRole === 'editor') && (
+                                            <button className="action-button" onClick={() => handleEditRenovacion(ren)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td colSpan="10" className="text-center">No hay renovaciones para mostrar</td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>
@@ -797,10 +855,14 @@ const InscripcionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, insc
                 <tbody>
                     {inscripcionesBacho.length > 0 ? (
                         inscripcionesBacho.map(insc => {
-                            // Contar documentos faltantes
+                            // Corregido: Usar el mismo criterio para documentos faltantes que InscripcionesTable
                             const docsFaltantes = insc.documentos_faltantes ?
-                                Object.values(insc.documentos_faltantes)
-                                    .filter((val, key) => typeof val === 'boolean' && val === false).length : 0;
+                                Object.entries(insc.documentos_faltantes)
+                                    .filter(([key, value]) =>
+                                        typeof value === 'boolean' &&
+                                        value === false && // false = documento faltante
+                                        key !== 'comentarios'
+                                    ).length : 0;
 
                             // Formatear fecha
                             const fecha = new Date(insc.fecha_ingreso);
@@ -865,7 +927,10 @@ const InscripcionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, insc
 };
 
 // Componente para la tabla de Renovaciones Bachillerato
-const RenovacionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => {
+const RenovacionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovaciones, userRole, onShowDetails, onEditInscripcion }) => {
+    // Filtrar renovaciones de bachillerato
+    const renovacionesBacho = renovaciones || [];
+
     return (
         <div className="registration-section">
             <h2 className="section-title">Renovación Bachillerato</h2>
@@ -879,7 +944,7 @@ const RenovacionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => 
                         <th>Folio</th>
                         <th>Estatus</th>
                         <th>Forma de Pago</th>
-                        <th>Documentos</th>
+                        <th>Monto</th>
                         <th>Hora</th>
                         <th>Atendido por</th>
                         <th>Fecha</th>
@@ -887,49 +952,52 @@ const RenovacionesBachoTable = ({ currentMonth, hoveredDoc, setHoveredDoc }) => 
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Daniel Vázquez</td>
-                        <td>REN-B-001</td>
-                        <td><span className="status completed">Completado</span></td>
-                        <td>Efectivo</td>
-                        <td>
-                            <div className="document-container">
-                                <span
-                                    className="document-badge"
-                                    onMouseEnter={() => setHoveredDoc('REN-B-001')}
-                                    onMouseLeave={() => setHoveredDoc(null)}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    2 faltantes
-                                </span>
-                                {hoveredDoc === 'REN-B-001' && (
-                                    <DocumentsTooltip missingDocsData={missingDocsData} recordId="REN-B-001" />
-                                )}
-                            </div>
-                        </td>
-                        <td>09:15</td>
-                        <td>Admin</td>
-                        <td>15/05/2023</td>
-                        <td className="actions">
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                            </button>
-                            <button className="action-button">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
+                    {renovacionesBacho.length > 0 ? (
+                        renovacionesBacho.map(ren => {
+                            // Formatear fecha
+                            const fecha = new Date(ren.fecha_ingreso);
+                            const fechaFormateada = fecha.toLocaleDateString('es-MX');
+
+                            return (
+                                <tr key={ren.id}>
+                                    <td>{ren.id}</td>
+                                    <td>{ren.nombre}</td>
+                                    <td>{ren.folio || '-'}</td>
+                                    <td><span className={`status ${ren.estatus.toLowerCase()}`}>{ren.estatus}</span></td>
+                                    <td>{ren.forma_pago}{ren.especificar ? ` (${ren.especificar})` : ''}</td>
+                                    <td>${ren.monto}</td>
+                                    <td>{ren.horario}</td>
+                                    <td>{ren.atendido_por}</td>
+                                    <td>{fechaFormateada}</td>
+                                    <td className="actions">
+                                        {/* Botón de visualización - visible para todos los roles */}
+                                        <button className="action-button" onClick={() => onShowDetails(ren)}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        </button>
+                                        {/* Botón de edición - solo visible para admin o editor */}
+                                        {(userRole === 'admin' || userRole === 'editor') && (
+                                            <button className="action-button" onClick={() => onEditInscripcion(ren)}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })
+                    ) : (
+                        <tr>
+                            <td colSpan="10" className="text-center">No hay renovaciones de bachillerato para mostrar</td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>
     );
 };
+
 export default DashboardHome;

@@ -16,8 +16,8 @@ function Header() {
         { path: 'dashboard', label: 'Dashboard' },
         { path: 'inscripciones', label: 'Inscripciones' },
         { path: 'renovaciones', label: 'Renovaciones' },
-        { path: 'inscripciones-bacho', label: 'Inscripciones Bacho' },
-        { path: 'renovaciones-bacho', label: 'Renovaciones Bacho' },
+        { path: 'cuenta', label: 'Registrar Caja' },
+        { path: 'caja', label: 'Registros Caja' },
     ];
 
     useEffect(() => {

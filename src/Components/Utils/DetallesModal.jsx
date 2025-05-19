@@ -8,8 +8,12 @@ const DetallesModal = ({ isOpen, onClose, inscripcion }) => {
     const formatearFecha = (fechaStr) => {
         if (!fechaStr) return '-';
         const fecha = new Date(fechaStr);
-        return fecha.toLocaleDateString('es-MX');
+        return fecha.toLocaleString('es-MX', {
+            dateStyle: 'short',
+            timeStyle: 'medium'
+        });
     };
+
 
     // Extraer los documentos faltantes
     const documentosFaltantes = inscripcion.documentos_faltantes ?
@@ -106,13 +110,8 @@ const DetallesModal = ({ isOpen, onClose, inscripcion }) => {
                     </div>
 
                     <div className="detail-row">
-                        <div className="detail-label">Hora:</div>
-                        <div className="detail-value">{inscripcion.hora || '-'}</div>
-                    </div>
-
-                    <div className="detail-row">
                         <div className="detail-label">Número telefónico:</div>
-                        <div className="detail-value">{inscripcion.numero_telefonico || '-'}</div>
+                        <div className="detail-value">{inscripcion.numero_telefonico || inscripcion.telefono || '-'}</div>
                     </div>
                 </div>
             </div>
