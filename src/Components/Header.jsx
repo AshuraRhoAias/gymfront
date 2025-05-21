@@ -18,6 +18,7 @@ function Header() {
         { path: 'renovaciones', label: 'Renovaciones' },
         { path: 'cuenta', label: 'Registrar Caja' },
         { path: 'caja', label: 'Registros Caja' },
+        { path: 'scanner', label: 'Scanner' },
     ];
 
     useEffect(() => {

@@ -66,10 +66,6 @@ export default function Inscripciones({ url }) {
             return;
         }
 
-        if (formData.forma_pago === 'Efectivo' && !formData.monto) {
-            alert('Por favor ingresa el monto para pagos en efectivo.');
-            return;
-        }
 
         const payload = {
             ...formData,
@@ -229,12 +225,13 @@ export default function Inscripciones({ url }) {
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Transferencia">Transferencia</option>
                                 <option value="Tarjeta">Tarjeta</option>
+                                <option value="otro">Otro</option>
                             </select>
                         </div>
                     </div>
 
                     {/* Campo de monto que aparece cuando la forma de pago es efectivo */}
-                    {formData.forma_pago === 'Efectivo' && (
+                    {/* {formData.forma_pago === 'Efectivo' && ( */}
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="monto">Monto *</label>
@@ -249,7 +246,7 @@ export default function Inscripciones({ url }) {
                                 />
                             </div>
                         </div>
-                    )}
+                    {/* )} */}
 
                     <div className="form-row">
                         <div className="form-group">

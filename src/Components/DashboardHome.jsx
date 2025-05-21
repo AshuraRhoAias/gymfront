@@ -233,8 +233,9 @@ const DashboardHome = ({ url }) => {
     const handleSearch = (e) => {
         const term = e.target.value;
         setSearchTerm(term);
+        const searchTermLower = term.toLowerCase();
 
-        if (term.trim() === '') {
+        if (!term.trim()) {
             setSearchResults({
                 inscripciones: [],
                 renovaciones: []
@@ -242,30 +243,36 @@ const DashboardHome = ({ url }) => {
             return;
         }
 
-        // Buscar en todas las inscripciones
-        const inscripcionesResults = inscripciones.filter(insc =>
-            insc.nombre.toLowerCase().includes(term.toLowerCase()) ||
-            (insc.folio && insc.folio.toLowerCase().includes(term.toLowerCase()))
-        );
+        // Función para normalizar valores de búsqueda
+        const normalizeValue = (value) => {
+            if (value === null || value === undefined) return '';
+            return value.toString().toLowerCase().trim();
+        };
 
-        // Buscar en todas las renovaciones
-        const renovacionesResults = renovaciones.filter(ren =>
-            ren.nombre.toLowerCase().includes(term.toLowerCase()) ||
-            (ren.folio && ren.folio.toLowerCase().includes(term.toLowerCase()))
-        );
+        // Función genérica de búsqueda
+        const searchRecords = (records, fields) => {
+            return records.filter(record =>
+                fields.some(field => {
+                    const fieldValue = normalizeValue(record[field]);
+                    return fieldValue.includes(searchTermLower);
+                })
+            );
+        };
+
+        // Realizar búsqueda en ambos tipos de registros
+        const inscripcionesResults = searchRecords(inscripciones, ['nombre', 'folio']);
+        const renovacionesResults = searchRecords(renovaciones, ['nombre', 'folio', 'folio_anterior']);
 
         setSearchResults({
             inscripciones: inscripcionesResults,
             renovaciones: renovacionesResults
         });
 
-        // Cambiar automáticamente a la sección correspondiente si hay resultados
+        // Cambiar pestaña automáticamente si hay resultados
         if (inscripcionesResults.length > 0) {
-            // Verificar si el primer resultado es de bachillerato o normal
             const firstResult = inscripcionesResults[0];
             setActiveTab(firstResult.es_bacho ? 'inscripciones-bacho' : 'inscripciones');
         } else if (renovacionesResults.length > 0) {
-            // Si no hay resultados en inscripciones pero sí en renovaciones
             const firstResult = renovacionesResults[0];
             setActiveTab(firstResult.es_bacho ? 'renovaciones-bacho' : 'renovaciones');
         }
@@ -774,6 +781,7 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovacion
                     <tr>
                         <th>ID</th>
                         <th>Nombre</th>
+                        <th>Folio Anterior</th> {/* Nueva columna */}
                         <th>Folio</th>
                         <th>Estatus</th>
                         <th>Forma de Pago</th>
@@ -787,7 +795,6 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovacion
                 <tbody>
                     {renovaciones && renovaciones.length > 0 ? (
                         renovaciones.map(ren => {
-                            // Formatear fecha
                             const fecha = new Date(ren.fecha_ingreso);
                             const fechaFormateada = fecha.toLocaleDateString('es-MX');
 
@@ -795,6 +802,7 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovacion
                                 <tr key={ren.id}>
                                     <td>{ren.id}</td>
                                     <td>{ren.nombre}</td>
+                                    <td>{ren.folio_anterior || '-'}</td> {/* Nueva celda */}
                                     <td>{ren.folio || '-'}</td>
                                     <td><span className={`status ${ren.estatus.toLowerCase()}`}>{ren.estatus}</span></td>
                                     <td>{ren.forma_pago}{ren.especificar ? ` (${ren.especificar})` : ''}</td>
@@ -803,14 +811,13 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovacion
                                     <td>{ren.atendido_por}</td>
                                     <td>{fechaFormateada}</td>
                                     <td className="actions">
-                                        {/* Botón de visualización - visible para todos los roles */}
                                         <button className="action-button" onClick={() => onShowDetails(ren)}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </button>
-                                        {/* Botón de edición - solo visible para admin o editor */}
+
                                         {(userRole === 'admin' || userRole === 'editor') && (
                                             <button className="action-button" onClick={() => handleEditRenovacion(ren)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -819,15 +826,17 @@ const RenovacionesTable = ({ currentMonth, hoveredDoc, setHoveredDoc, renovacion
                                             </button>
                                         )}
                                     </td>
+
                                 </tr>
                             );
                         })
                     ) : (
                         <tr>
-                            <td colSpan="10" className="text-center">No hay renovaciones para mostrar</td>
+                            <td colSpan="11" className="text-center">No hay renovaciones para mostrar</td>
                         </tr>
                     )}
                 </tbody>
+
             </table>
         </div>
     );

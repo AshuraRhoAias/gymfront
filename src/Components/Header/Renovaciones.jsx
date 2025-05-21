@@ -22,7 +22,7 @@ const Renovaciones = ({ url }) => {
         otraFormaPago: '',
         estatus: 'Pendiente',
         fechaHoraIngreso: '',
-        total: 0,
+        total: 380,
         horario: '',
         telefono: '',
         comentarios: '',
@@ -231,7 +231,8 @@ const Renovaciones = ({ url }) => {
                 fecha_ingreso: formData.fechaHoraIngreso,
                 telefono: formData.telefono,
                 es_bacho: formData.es_bacho,
-                comentarios: formData.comentarios
+                comentarios: formData.comentarios,
+                folio_anterior: formData.folioPrevio  // Agregamos el folio anterior aquí
             };
 
             console.log(apiData);
@@ -272,7 +273,7 @@ const Renovaciones = ({ url }) => {
                 otraFormaPago: '',
                 estatus: 'Pendiente',
                 fechaHoraIngreso: '',
-                total: 0,
+                total: 380,
                 horario: '',
                 telefono: '',
                 comentarios: '',

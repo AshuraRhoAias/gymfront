@@ -408,7 +408,6 @@ const EditarModal = ({ isOpen, onClose, inscripcion, onSave }) => {
                                 value={formData.horario}
                                 onChange={handleChange}
                                 className="form-input"
-                                required
                             />
                         </div>
 

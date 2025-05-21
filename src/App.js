@@ -6,9 +6,11 @@ import Renovaciones from './Components/Header/Renovaciones';
 import DashboardHome from './Components/DashboardHome';
 import Cuenta from './Components/Header/Cuenta';
 import CajaHistorial from './Components/Header/CajaHistorial';
+import Scanner from './Components/Scanner';
 
 function App() {
   const Url = "192.168.100.55:5000";
+  // const Url = "192.168.1.13:5000";
 
   return (
     <BrowserRouter>
@@ -20,6 +22,7 @@ function App() {
           <Route path="renovaciones" element={<Renovaciones url={Url} />} />
           <Route path="cuenta" element={<Cuenta url={Url} />} />
           <Route path="caja" element={<CajaHistorial url={Url} />} />
+          <Route path="scanner" element={<Scanner url={Url} />} />
         </Route>
       </Routes>
     </BrowserRouter>
