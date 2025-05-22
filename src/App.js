@@ -9,14 +9,14 @@ import CajaHistorial from './Components/Header/CajaHistorial';
 import Scanner from './Components/Scanner';
 
 function App() {
-  const Url = "192.168.100.55:5000";
-  // const Url = "192.168.1.13:5000";
+  // const Url = "192.168.100.55:5000";
+  const Url = "localhost:5000";
 
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login url={Url} />} />
-        <Route path="/dashboard" element={<Dashboard  url={Url}/>}>
+        <Route path="/dashboard" element={<Dashboard url={Url} />}>
           <Route index element={<DashboardHome url={Url} />} />
           <Route path="inscripciones" element={<Inscripciones url={Url} />} />
           <Route path="renovaciones" element={<Renovaciones url={Url} />} />

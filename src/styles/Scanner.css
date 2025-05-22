@@ -1,0 +1,640 @@
+/* QR Scanner Styles */
+
+.scanner-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f8f9fa;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styles */
+.scanner-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.scanner-header h2 {
+    color: #333;
+    margin: 0 0 10px 0;
+    font-size: 24px;
+}
+
+.scanner-detection-info {
+    margin-top: 10px;
+}
+
+.scanner-detection-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.scanner-detection-badge.scanner-native {
+    background: #e8f5e8;
+    color: #2d5a2d;
+    border: 1px solid #a8d4a8;
+}
+
+.scanner-detection-badge.scanner-jsqr {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.scanner-detection-badge.scanner-loading {
+    background: #fff3e0;
+    color: #ef6c00;
+    border: 1px solid #ffcc02;
+}
+
+/* Camera Styles */
+.scanner-camera-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.scanner-camera-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #000;
+}
+
+.scanner-camera-video.scanner-active {
+    display: block;
+}
+
+.scanner-detection-canvas {
+    display: none;
+}
+
+/* Scanning Overlay */
+.scanner-scanning-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.scanner-scan-area {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.scanner-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #00ff88;
+    z-index: 2;
+}
+
+.scanner-corner.scanner-top-left {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.scanner-corner.scanner-top-right {
+    top: -3px;
+    right: -3px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.scanner-corner.scanner-bottom-left {
+    bottom: -3px;
+    left: -3px;
+    border-right: none;
+    border-top: none;
+}
+
+.scanner-corner.scanner-bottom-right {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.scanner-scanning-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00ff88, transparent);
+    animation: scanning 2s ease-in-out infinite;
+}
+
+@keyframes scanning {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(196px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Controls */
+.scanner-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.scanner-scan-button,
+.scanner-stop-button,
+.scanner-clear-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.scanner-scan-button {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    min-width: 150px;
+}
+
+.scanner-scan-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.scanner-scan-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.scanner-stop-button {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    min-width: 150px;
+}
+
+.scanner-stop-button:hover {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.scanner-clear-button {
+    background: #6c757d;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+}
+
+.scanner-clear-button:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+}
+
+/* Loading */
+.scanner-loading {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.scanner-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.scanner-loading p {
+    margin: 0;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Error Messages */
+.scanner-error-message {
+    background: linear-gradient(135deg, #f8d7da, #f1b5bb);
+    color: #721c24;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #f5c6cb;
+    margin-bottom: 20px;
+}
+
+.scanner-error-message h3 {
+    margin: 0 0 10px 0;
+}
+
+.scanner-error-message p {
+    margin: 5px 0;
+}
+
+/* QR Result */
+.scanner-qr-result {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #90caf9;
+    margin-bottom: 20px;
+}
+
+.scanner-qr-result h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.scanner-scanned-text {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #bbdefb;
+}
+
+.scanner-scanned-text p {
+    margin: 0;
+    word-break: break-all;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Person Data */
+.scanner-person-data {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #c3e6cb;
+}
+
+.scanner-person-data h3 {
+    margin: 0 0 15px 0;
+    color: #155724;
+    font-size: 18px;
+    text-align: center;
+}
+
+.scanner-person-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.scanner-person-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 15px;
+}
+
+.scanner-person-name {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.scanner-status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.scanner-status-badge.scanner-status-activo {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.scanner-status-badge.scanner-status-inactivo {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.scanner-status-badge.scanner-status-pendiente {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* Person Details */
+.scanner-person-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.scanner-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.scanner-detail-row:last-child {
+    border-bottom: none;
+}
+
+.scanner-detail-label {
+    font-weight: 600;
+    color: #555;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.scanner-detail-value {
+    color: #333;
+    text-align: right;
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.scanner-detail-value.scanner-amount {
+    font-weight: 700;
+    color: #28a745;
+    font-size: 16px;
+}
+
+.scanner-phone-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.scanner-phone-link:hover {
+    text-decoration: underline;
+}
+
+/* Origin Badge */
+.scanner-origin-badge {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.scanner-origin-badge.scanner-origin-inscripcion {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.scanner-origin-badge.scanner-origin-renovacion {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    border: 1px solid #ce93d8;
+}
+
+/* Bacho Badge */
+.scanner-bacho-badge {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.scanner-bacho-badge.scanner-bacho-yes {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.scanner-bacho-badge.scanner-bacho-no {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Documents Section for Inscriptions */
+.scanner-documents-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.scanner-documents-title {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.scanner-documents-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.scanner-document-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.scanner-document-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.scanner-document-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.scanner-document-status.scanner-delivered {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.scanner-document-status.scanner-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.scanner-detail-row.scanner-comments {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.scanner-comments .scanner-detail-label {
+    min-width: auto;
+}
+
+.scanner-comments .scanner-detail-value {
+    text-align: left;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    width: 100%;
+    font-style: italic;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .scanner-container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .scanner-camera-container {
+        height: 250px;
+    }
+
+    .scanner-scan-area {
+        width: 150px;
+        height: 150px;
+    }
+
+    .scanner-header h2 {
+        font-size: 20px;
+    }
+
+    .scanner-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .scanner-scan-button,
+    .scanner-stop-button {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .scanner-person-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .scanner-person-name {
+        font-size: 18px;
+    }
+
+    .scanner-detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .scanner-detail-label {
+        min-width: auto;
+    }
+
+    .scanner-documents-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .scanner-document-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        padding: 10px;
+    }
+
+    .scanner-document-label {
+        font-size: 13px;
+    }
+
+    .scanner-documents-title {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .scanner-container {
+        margin: 5px;
+        padding: 10px;
+    }
+
+    .scanner-camera-container {
+        height: 200px;
+    }
+
+    .scanner-scan-area {
+        width: 120px;
+        height: 120px;
+    }
+
+    .scanner-person-card {
+        padding: 15px;
+    }
+
+    .scanner-person-name {
+        font-size: 16px;
+    }
+}
